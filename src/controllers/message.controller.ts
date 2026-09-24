@@ -133,6 +133,55 @@ export const updateMessageStatus = asyncHandler(async (req: Request, res: Respon
   sendSuccess(res, message, "Message status updated successfully", 200);
 });
 
+export const replyToMessage = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const replyContent = req.body.replyMessage || req.body.reply;
+
+  if (!replyContent || !replyContent.trim()) {
+    sendError(res, "Reply message content is required", 400);
+    return;
+  }
+
+  const message = await Message.findById(id);
+  if (!message) {
+    sendError(res, "Message not found", 404);
+    return;
+  }
+
+  // Format HTML email for client response
+  const htmlContent = `
+    <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; color: #1e293b; line-height: 1.6;">
+      <div style="margin-bottom: 24px;">
+        <div style="font-size: 15px; white-space: pre-wrap; color: #0f172a;">${replyContent.replace(/\n/g, "<br/>")}</div>
+      </div>
+      <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 24px 0;" />
+      <div style="padding: 12px 16px; background-color: #f8fafc; border-left: 3px solid #3b82f6; border-radius: 4px; font-size: 13px; color: #64748b;">
+        <p style="margin: 0 0 6px 0; font-weight: 600; color: #475569;">In reply to your inquiry regarding: ${message.subject || "Project Inquiry"}</p>
+        <p style="margin: 0; font-style: italic; white-space: pre-wrap;">"${message.message}"</p>
+      </div>
+      <div style="margin-top: 24px; font-size: 12px; color: #94a3b8;">
+        Sent via Portfolio Inbound Gateway
+      </div>
+    </div>
+  `;
+
+  // Send Email via Brevo
+  await sendEmail({
+    to: message.senderEmail,
+    subject: `Re: ${message.subject || "Your Portfolio Inquiry"}`,
+    htmlContent,
+  });
+
+  // Update Message status in Database
+  message.status = "replied";
+  message.isReplied = true;
+  message.repliedAt = new Date();
+  message.replyNotes = replyContent;
+  await message.save();
+
+  sendSuccess(res, message, "Reply dispatched and recorded successfully", 200);
+});
+
 export const deleteMessage = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const message = await Message.findByIdAndDelete(id);

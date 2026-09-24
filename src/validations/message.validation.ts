@@ -17,3 +17,10 @@ export const updateMessageStatusSchema = z.object({
   replyNotes: z.string().optional(),
   isReplied: z.boolean().optional(),
 });
+
+export const replyMessageSchema = z.object({
+  replyMessage: z.string().min(1, "Reply message cannot be empty").optional(),
+  reply: z.string().min(1, "Reply message cannot be empty").optional(),
+}).refine((data) => !!(data.replyMessage || data.reply), {
+  message: "Reply message content is required",
+});

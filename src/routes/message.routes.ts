@@ -4,10 +4,15 @@ import {
   getAllMessages,
   getMessageById,
   updateMessageStatus,
+  replyToMessage,
   deleteMessage,
 } from "../controllers";
 import { authenticate, validateRequest } from "../middlewares";
-import { createMessageSchema, updateMessageStatusSchema } from "../validations";
+import {
+  createMessageSchema,
+  updateMessageStatusSchema,
+  replyMessageSchema,
+} from "../validations";
 
 const router = Router();
 
@@ -22,6 +27,12 @@ router.patch(
   authenticate,
   validateRequest(updateMessageStatusSchema),
   updateMessageStatus,
+);
+router.post(
+  "/:id/reply",
+  authenticate,
+  validateRequest(replyMessageSchema),
+  replyToMessage,
 );
 router.delete("/:id", authenticate, deleteMessage);
 
