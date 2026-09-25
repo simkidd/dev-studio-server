@@ -67,6 +67,16 @@ export const getAllPostsAdmin = asyncHandler(async (_req: Request, res: Response
   sendSuccess(res, posts, "All posts retrieved for admin", 200);
 });
 
+export const getPostByIdAdmin = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const post = await Post.findById(id);
+  if (!post) {
+    sendError(res, "Post not found", 404);
+    return;
+  }
+  sendSuccess(res, post, "Post retrieved successfully", 200);
+});
+
 export const createPost = asyncHandler(async (req: Request, res: Response) => {
   const data = { ...req.body };
 

@@ -4,6 +4,7 @@ import {
   getPostBySlug,
   likePost,
   getAllPostsAdmin,
+  getPostByIdAdmin,
   createPost,
   updatePost,
   deletePost,
@@ -20,6 +21,7 @@ router.post("/slug/:slug/like", likePost);
 
 // Protected admin routes
 router.get("/admin/all", authenticate, getAllPostsAdmin);
+router.get("/admin/:id", authenticate, getPostByIdAdmin);
 router.post("/", authenticate, validateRequest(createPostSchema), createPost);
 router.put("/:id", authenticate, validateRequest(updatePostSchema), updatePost);
 router.delete("/:id", authenticate, deletePost);
