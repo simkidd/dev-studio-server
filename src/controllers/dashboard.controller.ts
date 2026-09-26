@@ -37,9 +37,11 @@ export const getDashboardStats = asyncHandler(
       Testimonial.countDocuments(),
       Message.find().sort({ createdAt: -1 }).limit(5),
       Project.find()
-        .sort({ createdAt: -1 })
+        .sort({ order: 1, createdAt: -1 })
         .limit(5)
-        .select("title slug category isPublished isFeatured createdAt"),
+        .select(
+          "title slug category isPublished isFeatured thumbnailUrl technologies createdAt",
+        ),
     ]);
 
     // Aggregate total views & likes across posts
