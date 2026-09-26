@@ -1,7 +1,8 @@
-import express, { Application, Request, Response } from "express";
+import express, { Application, Request, Response, NextFunction } from "express";
 import cors from "cors";
 import morgan from "morgan";
 import path from "node:path";
+import { connectDB } from "./config/db";
 import { ENV } from "./config/env";
 import { logger } from "./utils/logger";
 import { sendSuccess } from "./utils/api-response";
@@ -48,6 +49,18 @@ app.get("/health", (_req: Request, res: Response) => {
     },
     "API is healthy and operational",
   );
+});
+
+// Ensure database connection before handling API routes (critical for serverless / Vercel)
+app.use(async (_req: Request, _res: Response, next: NextFunction) => {
+  try {
+    if (ENV.MONGO_URI) {
+      await connectDB();
+    }
+    next();
+  } catch (error) {
+    next(error);
+  }
 });
 
 // Mount API v1 routes
