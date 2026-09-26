@@ -516,7 +516,6 @@ async function seed() {
           "Mentored 18 senior engineers across 3 distributed engineering squads",
           "Engineered idempotent transaction ledger achieving zero double-charge anomalies over 24 months",
         ],
-        order: 1,
       },
       {
         company: "Vercel Partner Labs",
@@ -540,7 +539,6 @@ async function seed() {
           "Delivered 4 flagship e-commerce migrations resulting in +140% mobile conversion rates and 99/100 Core Web Vitals",
           "Published canonical architectural guides referenced by 100k+ developers worldwide",
         ],
-        order: 2,
       },
       {
         company: "HyperScale Cloud Systems",
@@ -565,7 +563,6 @@ async function seed() {
           "Spearheaded MongoDB sharding strategy cutting database query times by 65%",
           "Maintained 99.99% uptime across 12 consecutive quarters",
         ],
-        order: 3,
       },
       {
         company: "Nexus Digital Agency",
@@ -582,7 +579,6 @@ async function seed() {
         achievements: [
           "Shipped 12 end-to-end commercial web applications on schedule and within budget",
         ],
-        order: 4,
       },
     ]);
     logger.info("✅ Career timeline seeded (4 positions).");

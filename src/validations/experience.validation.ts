@@ -17,7 +17,6 @@ export const createExperienceSchema = z.object({
   technologies: z.array(z.string()).optional().default([]),
   companyLogoUrl: z.string().optional(),
   companyWebsiteUrl: z.string().optional(),
-  order: z.number().int().optional().default(0),
 });
 
 export const updateExperienceSchema = createExperienceSchema.partial();

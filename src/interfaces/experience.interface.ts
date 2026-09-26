@@ -22,7 +22,6 @@ export interface IExperience extends Document {
   technologies: string[];
   companyLogoUrl?: string;
   companyWebsiteUrl?: string;
-  order: number;
   createdAt: Date;
   updatedAt: Date;
 }
