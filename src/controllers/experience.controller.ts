@@ -5,8 +5,9 @@ import { asyncHandler, sendSuccess, sendError } from "../utils";
 export const getPublicExperiences = asyncHandler(
   async (_req: Request, res: Response) => {
     const experiences = await Experience.find().sort({
-      order: 1,
+      isCurrent: -1,
       startDate: -1,
+      endDate: -1,
     });
     sendSuccess(
       res,
@@ -57,7 +58,7 @@ export const deleteExperience = asyncHandler(
 
 export const reorderExperiences = asyncHandler(
   async (req: Request, res: Response) => {
-    const { orders } = req.body as { orders: { id: string; order: number }[] };
+    const orders = (req.body.orders || req.body.items) as { id: string; order: number }[];
 
     if (!Array.isArray(orders)) {
       sendError(res, "Invalid reorder payload", 400);
