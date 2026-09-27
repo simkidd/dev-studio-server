@@ -49,8 +49,6 @@ export const createProjectSchema = z.object({
     .min(1, "Summary is required")
     .max(300, "Summary cannot exceed 300 characters"),
   caseStudy: z.string().optional(),
-  thumbnailUrl: z.string().optional(),
-  thumbnailPublicId: z.string().optional(),
   galleryImages: jsonOrArray(z.array(projectImageSchema))
     .optional()
     .default([]),
