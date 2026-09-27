@@ -51,9 +51,11 @@ export const createProjectSchema = z.object({
   caseStudy: z.string().optional(),
   thumbnailUrl: z.string().optional(),
   thumbnailPublicId: z.string().optional(),
-  galleryImages: jsonOrArray(z.array(projectImageSchema)).optional().default([]),
+  galleryImages: jsonOrArray(z.array(projectImageSchema))
+    .optional()
+    .default([]),
   technologies: jsonOrArray(
-    z.array(z.string()).min(1, "At least one technology is required")
+    z.array(z.string()).min(1, "At least one technology is required"),
   ),
 
   category: z
@@ -67,8 +69,8 @@ export const createProjectSchema = z.object({
       "System Design",
     ])
     .default("Full-Stack"),
-  liveUrl: z.string().url("Invalid live URL").or(z.literal("")).optional(),
-  githubUrl: z.string().url("Invalid GitHub URL").or(z.literal("")).optional(),
+  liveUrl: z.url("Invalid live URL").or(z.literal("")).optional(),
+  githubUrl: z.url("Invalid GitHub URL").or(z.literal("")).optional(),
   isFeatured: booleanPreprocess.optional().default(false),
   metrics: jsonOrArray(z.array(projectMetricSchema)).optional().default([]),
   order: numberPreprocess.optional().default(0),

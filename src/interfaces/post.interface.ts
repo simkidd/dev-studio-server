@@ -6,6 +6,7 @@ export interface IPost {
   excerpt: string;
   content: string; // Markdown / MDX content
   coverImageUrl?: string;
+  coverImagePublicId?: string;
   tags: string[];
   canonicalUrl?: string;
   readingTimeMinutes: number;

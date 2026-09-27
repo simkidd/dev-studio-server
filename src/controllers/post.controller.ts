@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import { Post } from "../models";
+import { UploadService } from "../services";
 import { asyncHandler, sendSuccess, sendError, slugify, paginate } from "../utils";
+import { logger } from "../utils/logger";
 
 export const getPublicPosts = asyncHandler(async (req: Request, res: Response) => {
   const { tag, search, page = 1, limit = 10 } = req.query;
@@ -80,6 +82,19 @@ export const getPostByIdAdmin = asyncHandler(async (req: Request, res: Response)
 export const createPost = asyncHandler(async (req: Request, res: Response) => {
   const data = { ...req.body };
 
+  // Handle direct file upload via multipart/form-data
+  if (req.file) {
+    const uploadResult = await UploadService.uploadFile(req.file, "posts");
+    data.coverImageUrl = uploadResult.url;
+    data.coverImagePublicId = uploadResult.publicId;
+  }
+
+  if (data.content) {
+    const text = data.content.replace(/<[^>]*>/g, " ").trim();
+    const wordCount = text ? text.split(/\s+/).length : 0;
+    data.readingTimeMinutes = Math.max(1, Math.ceil(wordCount / 200));
+  }
+
   if (!data.slug) {
     let baseSlug = slugify(data.title);
     let candidateSlug = baseSlug;
@@ -96,16 +111,78 @@ export const createPost = asyncHandler(async (req: Request, res: Response) => {
 
 export const updatePost = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
+  const data = { ...req.body };
 
-  const post = await Post.findByIdAndUpdate(id, req.body, {
-    new: true,
-    runValidators: true,
-  });
-
-  if (!post) {
+  const existingPost = await Post.findById(id);
+  if (!existingPost) {
     sendError(res, "Post not found", 404);
     return;
   }
+
+  // Handle cover image removal
+  if (data.removeCoverImage === "true" || data.removeCoverImage === true) {
+    if (existingPost.coverImagePublicId) {
+      UploadService.deleteFile(existingPost.coverImagePublicId).catch((err) =>
+        logger.warn(
+          `Failed to delete post cover image by publicId [${existingPost.coverImagePublicId}]:`,
+          err
+        )
+      );
+    } else if (existingPost.coverImageUrl) {
+      UploadService.deleteByUrl(existingPost.coverImageUrl).catch((err) =>
+        logger.warn(
+          `Failed to delete post cover image from Cloudinary [${existingPost.coverImageUrl}]:`,
+          err
+        )
+      );
+    }
+    data.coverImageUrl = "";
+    data.coverImagePublicId = "";
+  }
+
+  // Handle direct file upload via multipart/form-data
+  if (req.file) {
+    const uploadResult = await UploadService.uploadFile(req.file, "posts");
+    data.coverImageUrl = uploadResult.url;
+    data.coverImagePublicId = uploadResult.publicId;
+  }
+
+  // If coverImageUrl or coverImagePublicId was replaced, delete previous image asset from Cloudinary
+  if (
+    (data.coverImagePublicId &&
+      existingPost.coverImagePublicId &&
+      data.coverImagePublicId !== existingPost.coverImagePublicId) ||
+    (data.coverImageUrl &&
+      existingPost.coverImageUrl &&
+      data.coverImageUrl !== existingPost.coverImageUrl)
+  ) {
+    if (existingPost.coverImagePublicId) {
+      UploadService.deleteFile(existingPost.coverImagePublicId).catch((err) =>
+        logger.warn(
+          `Failed to delete replaced post cover image by publicId [${existingPost.coverImagePublicId}]:`,
+          err
+        )
+      );
+    } else if (existingPost.coverImageUrl) {
+      UploadService.deleteByUrl(existingPost.coverImageUrl).catch((err) =>
+        logger.warn(
+          `Failed to delete replaced post cover image from Cloudinary [${existingPost.coverImageUrl}]:`,
+          err
+        )
+      );
+    }
+  }
+
+  if (data.content) {
+    const text = data.content.replace(/<[^>]*>/g, " ").trim();
+    const wordCount = text ? text.split(/\s+/).length : 0;
+    data.readingTimeMinutes = Math.max(1, Math.ceil(wordCount / 200));
+  }
+
+  const post = await Post.findByIdAndUpdate(id, data, {
+    new: true,
+    runValidators: true,
+  });
 
   sendSuccess(res, post, "Post updated successfully", 200);
 });
@@ -117,6 +194,23 @@ export const deletePost = asyncHandler(async (req: Request, res: Response) => {
   if (!post) {
     sendError(res, "Post not found", 404);
     return;
+  }
+
+  // Clean up post cover image from Cloudinary / storage
+  if (post.coverImagePublicId) {
+    UploadService.deleteFile(post.coverImagePublicId).catch((err) =>
+      logger.warn(
+        `Failed to delete post cover image by publicId [${post.coverImagePublicId}]:`,
+        err
+      )
+    );
+  } else if (post.coverImageUrl) {
+    UploadService.deleteByUrl(post.coverImageUrl).catch((err) =>
+      logger.warn(
+        `Failed to delete post cover image from Cloudinary on delete [${post.coverImageUrl}]:`,
+        err
+      )
+    );
   }
 
   sendSuccess(res, null, "Post deleted successfully", 200);

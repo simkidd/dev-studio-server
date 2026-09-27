@@ -29,6 +29,9 @@ const postSchema = new Schema<IPost>(
     coverImageUrl: {
       type: String,
     },
+    coverImagePublicId: {
+      type: String,
+    },
     tags: [
       {
         type: String,

@@ -9,7 +9,7 @@ import {
   updatePost,
   deletePost,
 } from "../controllers";
-import { authenticate, validateRequest } from "../middlewares";
+import { authenticate, validateRequest, upload } from "../middlewares";
 import { createPostSchema, updatePostSchema } from "../validations";
 
 const router = Router();
@@ -22,8 +22,20 @@ router.post("/slug/:slug/like", likePost);
 // Protected admin routes
 router.get("/admin/all", authenticate, getAllPostsAdmin);
 router.get("/admin/:id", authenticate, getPostByIdAdmin);
-router.post("/", authenticate, validateRequest(createPostSchema), createPost);
-router.put("/:id", authenticate, validateRequest(updatePostSchema), updatePost);
+router.post(
+  "/",
+  authenticate,
+  upload.single("image"),
+  validateRequest(createPostSchema),
+  createPost
+);
+router.put(
+  "/:id",
+  authenticate,
+  upload.single("image"),
+  validateRequest(updatePostSchema),
+  updatePost
+);
 router.delete("/:id", authenticate, deletePost);
 
 export default router;
