@@ -672,8 +672,6 @@ async function seed() {
         clientName: "Sarah Jenkins",
         clientRole: "VP of Engineering",
         company: "Fintech Dynamics",
-        avatarUrl:
-          "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=200&q=80",
         quote:
           "Alex transformed our core ledger architecture in 3 months. His deep command of distributed caching and Go/Node concurrency dropped our latency by 80% while handling our biggest Black Friday volume ever.",
         rating: 5,
@@ -685,8 +683,6 @@ async function seed() {
         clientName: "David Vance",
         clientRole: "CTO & Co-Founder",
         company: "OmniLabs AI",
-        avatarUrl:
-          "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80",
         quote:
           "Hiring Alex as our Staff Full-Stack Architect was the best decision we made before our Series A. He wrote immaculate code, established our CI/CD pipelines, and mentored our junior engineers with unmatched clarity.",
         rating: 5,
@@ -698,8 +694,6 @@ async function seed() {
         clientName: "Elena Rostova",
         clientRole: "Head of Product",
         company: "Stratos Cloud",
-        avatarUrl:
-          "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=200&q=80",
         quote:
           "Alex brings a rare combination of rock-solid backend engineering and exquisite design sensibility. The design system and dashboards he created set a new standard for our entire organization.",
         rating: 5,
@@ -711,8 +705,6 @@ async function seed() {
         clientName: "Marcus Sterling",
         clientRole: "Director of Engineering",
         company: "Veloce Payments",
-        avatarUrl:
-          "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80",
         quote:
           "Incredible technical leadership. He stepped into a messy legacy codebase and systematically untangled our payment pipeline without a single minute of downtime.",
         rating: 5,
