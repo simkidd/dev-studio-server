@@ -19,6 +19,8 @@ export interface IProfileStats {
 
 export interface IProfile extends Document {
   _id: Types.ObjectId;
+  brandName?: string;
+  logoUrl?: string;
   firstName: string;
   middleName?: string;
   lastName: string;

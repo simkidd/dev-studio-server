@@ -3,6 +3,14 @@ import { IProfile } from "../interfaces";
 
 const profileSchema = new Schema<IProfile>(
   {
+    brandName: {
+      type: String,
+      trim: true,
+    },
+    logoUrl: {
+      type: String,
+      trim: true,
+    },
     firstName: {
       type: String,
       required: [true, "First name is required"],

@@ -1,6 +1,8 @@
 import { z } from "zod";
 
 export const updateProfileSchema = z.object({
+  brandName: z.string().optional(),
+  logoUrl: z.url("Invalid logo URL").or(z.literal("")).optional(),
   firstName: z.string().min(1, "First name is required").optional(),
   middleName: z.string().optional(),
   lastName: z.string().min(1, "Last name is required").optional(),

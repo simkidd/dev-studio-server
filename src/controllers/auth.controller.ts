@@ -61,8 +61,8 @@ export const getMe = asyncHandler(async (req: AuthRequest, res: Response) => {
   const userJson = user.toJSON();
   const responseData = {
     ...userJson,
-    firstName: user.firstName || profile?.firstName || "",
-    lastName: user.lastName || profile?.lastName || "",
+    firstName: profile?.firstName || user.firstName || "",
+    lastName: profile?.lastName || user.lastName || "",
     avatarUrl: profile?.avatarUrl || "",
     headline: profile?.headline || "",
   };

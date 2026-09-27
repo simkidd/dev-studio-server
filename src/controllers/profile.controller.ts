@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-import { Profile } from "../models";
+import { Profile, User } from "../models";
+import { AuthRequest } from "../middlewares";
 import { asyncHandler, sendSuccess, sendError } from "../utils";
 
 export const getPublicProfile = asyncHandler(async (_req: Request, res: Response) => {
@@ -32,7 +33,7 @@ export const getPublicProfile = asyncHandler(async (_req: Request, res: Response
   sendSuccess(res, profile, "Profile retrieved successfully", 200);
 });
 
-export const updateProfile = asyncHandler(async (req: Request, res: Response) => {
+export const updateProfile = asyncHandler(async (req: AuthRequest, res: Response) => {
   let profile = await Profile.findOne().sort({ createdAt: -1 });
 
   if (!profile) {
@@ -42,5 +43,13 @@ export const updateProfile = asyncHandler(async (req: Request, res: Response) =>
     await profile.save();
   }
 
+  if (req.user?.userId) {
+    await User.findByIdAndUpdate(req.user.userId, {
+      firstName: profile.firstName,
+      lastName: profile.lastName,
+    });
+  }
+
   sendSuccess(res, profile, "Profile updated successfully", 200);
 });
+

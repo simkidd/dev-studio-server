@@ -13,7 +13,7 @@ export function generateContactConfirmationEmail(data: ContactConfirmationData):
   const {
     senderName,
     subject,
-    myFullName = "John Doe",
+    myFullName = "Developer",
     portfolioUrl = "http://localhost:3000",
   } = data;
 
