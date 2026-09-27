@@ -369,7 +369,7 @@ async function seed() {
         order: 1,
       },
       {
-        name: "JavaScript (ESNext)",
+        name: "JavaScript",
         category: "Languages",
         proficiency: 98,
         level: "Expert",
@@ -377,7 +377,7 @@ async function seed() {
         order: 2,
       },
       {
-        name: "Go (Golang)",
+        name: "Go",
         category: "Languages",
         proficiency: 88,
         level: "Advanced",
@@ -393,7 +393,7 @@ async function seed() {
         order: 4,
       },
       {
-        name: "Next.js 15 (App Router)",
+        name: "Next.js",
         category: "Frontend",
         proficiency: 96,
         level: "Expert",
@@ -401,7 +401,7 @@ async function seed() {
         order: 5,
       },
       {
-        name: "React 19 & Hooks",
+        name: "React",
         category: "Frontend",
         proficiency: 98,
         level: "Expert",
@@ -409,7 +409,7 @@ async function seed() {
         order: 6,
       },
       {
-        name: "Tailwind CSS v4",
+        name: "Tailwind CSS",
         category: "Frontend",
         proficiency: 95,
         level: "Expert",
@@ -417,7 +417,7 @@ async function seed() {
         order: 7,
       },
       {
-        name: "Node.js & Express v5",
+        name: "Node.js",
         category: "Backend",
         proficiency: 96,
         level: "Expert",
@@ -425,7 +425,7 @@ async function seed() {
         order: 8,
       },
       {
-        name: "GraphQL & REST APIs",
+        name: "GraphQL",
         category: "Backend",
         proficiency: 92,
         level: "Expert",
@@ -433,7 +433,7 @@ async function seed() {
         order: 9,
       },
       {
-        name: "PostgreSQL & Prisma",
+        name: "PostgreSQL",
         category: "Database",
         proficiency: 92,
         level: "Advanced",
@@ -441,7 +441,7 @@ async function seed() {
         order: 10,
       },
       {
-        name: "MongoDB & Mongoose",
+        name: "MongoDB",
         category: "Database",
         proficiency: 94,
         level: "Expert",
@@ -449,7 +449,7 @@ async function seed() {
         order: 11,
       },
       {
-        name: "Redis (Caching/Queues)",
+        name: "Redis",
         category: "Database",
         proficiency: 92,
         level: "Expert",
@@ -457,7 +457,7 @@ async function seed() {
         order: 12,
       },
       {
-        name: "Docker & Containerization",
+        name: "Docker",
         category: "DevOps/Cloud",
         proficiency: 90,
         level: "Advanced",
@@ -465,7 +465,7 @@ async function seed() {
         order: 13,
       },
       {
-        name: "Kubernetes & Helm",
+        name: "Kubernetes",
         category: "DevOps/Cloud",
         proficiency: 82,
         level: "Advanced",
@@ -473,15 +473,15 @@ async function seed() {
         order: 14,
       },
       {
-        name: "Microservices & Distributed Architecture",
-        category: "Architecture",
+        name: "Express",
+        category: "Backend",
         proficiency: 95,
         level: "Expert",
         isTopSkill: true,
         order: 15,
       },
       {
-        name: "CI/CD & GitHub Actions",
+        name: "GitHub Actions",
         category: "Tools",
         proficiency: 92,
         level: "Advanced",
@@ -583,7 +583,7 @@ async function seed() {
     ]);
     logger.info("✅ Career timeline seeded (4 positions).");
 
-    // 6. Technical Blog Articles (5 Posts)
+    // 6. Technical Blog Articles (5 Posts with Cover Images)
     await Post.create([
       {
         title:
@@ -592,6 +592,8 @@ async function seed() {
         excerpt:
           "How we eliminated redundant database queries and achieved sub-20ms TTFB on global Next.js deployments.",
         content: `## The Concurrency Problem\n\nWhen scaling distributed web applications to millions of monthly active users, database connections rapidly become the primary choke point.\n\n### Architectural Approach\n\nBy leveraging multi-layered caching with localized Redis replicas and Next.js \`unstable_cache\`, we established an invalidated tag cache pipeline:\n\n\`\`\`typescript\nexport const getCachedUserData = unstable_cache(\n  async (userId: string) => db.users.findById(userId),\n  ['user-cache'],\n  { revalidate: 3600, tags: ['users'] }\n);\n\`\`\`\n\n### Results\n\n- **p99 Latency:** 340ms -> 18ms\n- **Database Load Reduction:** -78%`,
+        coverImageUrl:
+          "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1200&q=80",
         tags: ["Architecture", "Next.js", "Redis", "Performance"],
         isPublished: true,
         viewsCount: 3420,
@@ -606,6 +608,8 @@ async function seed() {
         excerpt:
           "Lessons learned handling 100+ concurrent multi-user editing streams without centralized locks.",
         content: `## Conflict Resolution at Scale\n\nCollaborative editing systems require mathematical guarantees that every client eventually converges on identical state regardless of network reordering or offline latency.\n\n### Implementation Insights\n\nWe utilized Yjs with binary state vector diffs transmitted over WebSockets, keeping payload sizes under 250 bytes per stroke.`,
+        coverImageUrl:
+          "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1200&q=80",
         tags: ["Distributed Systems", "WebSockets", "TypeScript", "CRDT"],
         isPublished: true,
         viewsCount: 2150,
@@ -619,6 +623,8 @@ async function seed() {
         excerpt:
           "The expand-and-contract pattern for schema evolution across live production environments.",
         content: `## Safe Schema Evolution\n\nNever rename fields or drop columns in a single deployment. By executing phased migration cycles (Expand -> Dual-Write -> Backfill -> Contract), you guarantee zero downtime.`,
+        coverImageUrl:
+          "https://images.unsplash.com/photo-1544383835-bda2bc66a55d?auto=format&fit=crop&w=1200&q=80",
         tags: ["Database", "DevOps", "PostgreSQL", "MongoDB"],
         isPublished: true,
         viewsCount: 1870,
@@ -632,6 +638,8 @@ async function seed() {
         excerpt:
           "Defensive coding practices, JWT silent refresh rotation, and strict CSP headers for production apps.",
         content: `## Hardening the Surface\n\nSecurity is not an afterthought. In this guide we detail CSRF prevention, httpOnly cookies, rate limiting, and automated dependency vulnerability scanners in CI pipelines.`,
+        coverImageUrl:
+          "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=1200&q=80",
         tags: ["Security", "Authentication", "TypeScript", "Node.js"],
         isPublished: true,
         viewsCount: 4120,
@@ -646,6 +654,8 @@ async function seed() {
         excerpt:
           "Deciding when to use client-side reactive state vs server component cache primitives.",
         content: `## Modern State Architecture\n\nReact 19 brings unified paradigms. Here is how we categorize state into ephemeral UI state (Zustand), server state (React Query), and URL search param state.`,
+        coverImageUrl:
+          "https://images.unsplash.com/photo-1633356122544-f134324a6cee?auto=format&fit=crop&w=1200&q=80",
         tags: ["React", "Frontend", "Zustand", "State Management"],
         isPublished: true,
         viewsCount: 2980,
@@ -654,7 +664,7 @@ async function seed() {
         publishedAt: new Date("2026-05-12").toISOString(),
       },
     ]);
-    logger.info("✅ Blog articles seeded (5 posts).");
+    logger.info("✅ Blog articles seeded (5 posts with cover images).");
 
     // 7. Client Testimonials & Social Proof (4 Items)
     await Testimonial.create([
