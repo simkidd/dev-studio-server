@@ -674,10 +674,8 @@ async function seed() {
         company: "Fintech Dynamics",
         quote:
           "Alex transformed our core ledger architecture in 3 months. His deep command of distributed caching and Go/Node concurrency dropped our latency by 80% while handling our biggest Black Friday volume ever.",
-        rating: 5,
         isFeatured: true,
         isApproved: true,
-        order: 1,
       },
       {
         clientName: "David Vance",
@@ -685,10 +683,8 @@ async function seed() {
         company: "OmniLabs AI",
         quote:
           "Hiring Alex as our Staff Full-Stack Architect was the best decision we made before our Series A. He wrote immaculate code, established our CI/CD pipelines, and mentored our junior engineers with unmatched clarity.",
-        rating: 5,
         isFeatured: true,
         isApproved: true,
-        order: 2,
       },
       {
         clientName: "Elena Rostova",
@@ -696,10 +692,8 @@ async function seed() {
         company: "Stratos Cloud",
         quote:
           "Alex brings a rare combination of rock-solid backend engineering and exquisite design sensibility. The design system and dashboards he created set a new standard for our entire organization.",
-        rating: 5,
         isFeatured: true,
         isApproved: true,
-        order: 3,
       },
       {
         clientName: "Marcus Sterling",
@@ -707,10 +701,8 @@ async function seed() {
         company: "Veloce Payments",
         quote:
           "Incredible technical leadership. He stepped into a messy legacy codebase and systematically untangled our payment pipeline without a single minute of downtime.",
-        rating: 5,
         isFeatured: false,
         isApproved: true,
-        order: 4,
       },
     ]);
     logger.info("✅ Testimonials seeded (4 items).");

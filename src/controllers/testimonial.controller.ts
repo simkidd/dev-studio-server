@@ -5,7 +5,7 @@ import { asyncHandler, sendSuccess, sendError } from "../utils";
 export const getPublicTestimonials = asyncHandler(
   async (_req: Request, res: Response) => {
     const testimonials = await Testimonial.find({ isApproved: true })
-      .sort({ order: 1, createdAt: -1 })
+      .sort({ createdAt: -1 })
       .populate("projectRef", "title slug thumbnailUrl");
 
     sendSuccess(res, testimonials, "Testimonials retrieved successfully", 200);
@@ -15,7 +15,7 @@ export const getPublicTestimonials = asyncHandler(
 export const getAllTestimonialsAdmin = asyncHandler(
   async (_req: Request, res: Response) => {
     const testimonials = await Testimonial.find()
-      .sort({ order: 1, createdAt: -1 })
+      .sort({ createdAt: -1 })
       .populate("projectRef", "title slug");
 
     sendSuccess(res, testimonials, "All testimonials retrieved for admin", 200);

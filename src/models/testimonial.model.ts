@@ -18,18 +18,9 @@ const testimonialSchema = new Schema<ITestimonial>(
       required: [true, "Company name is required"],
       trim: true,
     },
-    avatarUrl: {
-      type: String,
-    },
     quote: {
       type: String,
       required: [true, "Testimonial quote is required"],
-    },
-    rating: {
-      type: Number,
-      min: 1,
-      max: 5,
-      default: 5,
     },
     projectRef: {
       type: Schema.Types.ObjectId,
@@ -50,11 +41,6 @@ const testimonialSchema = new Schema<ITestimonial>(
     isApproved: {
       type: Boolean,
       default: true,
-    },
-    order: {
-      type: Number,
-      default: 0,
-      index: true,
     },
   },
   {
