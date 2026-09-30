@@ -3,6 +3,12 @@ import { ISkill } from "../interfaces";
 
 const skillSchema = new Schema<ISkill>(
   {
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: [true, "User ID is required"],
+      index: true,
+    },
     name: {
       type: String,
       required: [true, "Skill name is required"],
@@ -18,10 +24,14 @@ const skillSchema = new Schema<ISkill>(
         "DevOps/Cloud",
         "Architecture",
         "Tools",
+        "Graphics",
+        "Animation",
+        "Design",
       ],
       required: [true, "Skill category is required"],
       index: true,
     },
+
     icon: {
       type: String,
       trim: true,

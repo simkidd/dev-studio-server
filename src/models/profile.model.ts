@@ -3,6 +3,13 @@ import { IProfile } from "../interfaces";
 
 const profileSchema = new Schema<IProfile>(
   {
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: [true, "User ID is required"],
+      unique: true,
+      index: true,
+    },
     brandName: {
       type: String,
       trim: true,
@@ -51,6 +58,14 @@ const profileSchema = new Schema<IProfile>(
       type: String,
       required: [true, "Location is required"],
     },
+    contactEmail: {
+      type: String,
+      trim: true,
+    },
+    contactPhone: {
+      type: String,
+      trim: true,
+    },
     isAvailableForHire: {
       type: Boolean,
       default: true,
@@ -66,6 +81,7 @@ const profileSchema = new Schema<IProfile>(
       discord: { type: String, trim: true },
       youtube: { type: String, trim: true },
       email: { type: String, trim: true },
+      phone: { type: String, trim: true },
       website: { type: String, trim: true },
     },
     stats: {

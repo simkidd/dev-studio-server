@@ -3,6 +3,12 @@ import { IPost } from "../interfaces";
 
 const postSchema = new Schema<IPost>(
   {
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: [true, "User ID is required"],
+      index: true,
+    },
     title: {
       type: String,
       required: [true, "Post title is required"],
@@ -11,7 +17,6 @@ const postSchema = new Schema<IPost>(
     slug: {
       type: String,
       required: [true, "Post slug is required"],
-      unique: true,
       lowercase: true,
       trim: true,
       index: true,
@@ -73,5 +78,7 @@ const postSchema = new Schema<IPost>(
     },
   },
 );
+
+postSchema.index({ userId: 1, slug: 1 }, { unique: true });
 
 export const Post = model<IPost>("Post", postSchema);

@@ -9,6 +9,7 @@ export type ExperienceType =
 
 export interface IExperience extends Document {
   _id: Types.ObjectId;
+  userId: Types.ObjectId;
   company: string;
   role: string;
   employmentType?: ExperienceType;

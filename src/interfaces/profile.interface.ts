@@ -7,6 +7,7 @@ export interface ISocialLinks {
   discord?: string;
   youtube?: string;
   email?: string;
+  phone?: string;
   website?: string;
 }
 
@@ -19,6 +20,7 @@ export interface IProfileStats {
 
 export interface IProfile extends Document {
   _id: Types.ObjectId;
+  userId: Types.ObjectId;
   brandName?: string;
   logoUrl?: string;
   firstName: string;
@@ -31,6 +33,8 @@ export interface IProfile extends Document {
   avatarUrl?: string;
   resumeUrl?: string;
   location: string;
+  contactEmail?: string;
+  contactPhone?: string;
   isAvailableForHire: boolean;
   availabilityNote?: string;
   socialLinks: ISocialLinks;

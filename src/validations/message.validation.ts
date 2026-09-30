@@ -10,6 +10,8 @@ export const createMessageSchema = z.object({
     .trim(),
   company: z.string().optional(),
   budgetRange: z.string().optional(),
+  portfolioSlug: z.string().optional(),
+  userId: z.string().optional(),
 });
 
 export const updateMessageStatusSchema = z.object({
@@ -18,9 +20,11 @@ export const updateMessageStatusSchema = z.object({
   isReplied: z.boolean().optional(),
 });
 
-export const replyMessageSchema = z.object({
-  replyMessage: z.string().min(1, "Reply message cannot be empty").optional(),
-  reply: z.string().min(1, "Reply message cannot be empty").optional(),
-}).refine((data) => !!(data.replyMessage || data.reply), {
-  message: "Reply message content is required",
-});
+export const replyMessageSchema = z
+  .object({
+    replyMessage: z.string().min(1, "Reply message cannot be empty").optional(),
+    reply: z.string().min(1, "Reply message cannot be empty").optional(),
+  })
+  .refine((data) => !!(data.replyMessage || data.reply), {
+    message: "Reply message content is required",
+  });

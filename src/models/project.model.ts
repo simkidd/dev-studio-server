@@ -16,6 +16,12 @@ const projectImageSchema = new Schema<IProjectImage>(
 
 const projectSchema = new Schema<IProject>(
   {
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: [true, "User ID is required"],
+      index: true,
+    },
     title: {
       type: String,
       required: [true, "Project title is required"],
@@ -24,7 +30,6 @@ const projectSchema = new Schema<IProject>(
     slug: {
       type: String,
       required: [true, "Project slug is required"],
-      unique: true,
       lowercase: true,
       trim: true,
       index: true,
@@ -62,9 +67,12 @@ const projectSchema = new Schema<IProject>(
         "DevOps",
         "AI/ML",
         "System Design",
+        "Creative Dev",
+        "3D/WebGL",
       ],
       default: "Full-Stack",
     },
+
     liveUrl: {
       type: String,
       trim: true,
@@ -109,5 +117,7 @@ const projectSchema = new Schema<IProject>(
     },
   },
 );
+
+projectSchema.index({ userId: 1, slug: 1 }, { unique: true });
 
 export const Project = model<IProject>("Project", projectSchema);

@@ -13,6 +13,8 @@ export const updateProfileSchema = z.object({
   avatarUrl: z.url("Invalid avatar URL").or(z.literal("")).optional(),
   resumeUrl: z.url("Invalid resume URL").or(z.literal("")).optional(),
   location: z.string().min(1, "Location is required").optional(),
+  contactEmail: z.string().optional(),
+  contactPhone: z.string().optional(),
   isAvailableForHire: z.boolean().optional(),
   availabilityNote: z.string().optional(),
   socialLinks: z
@@ -23,6 +25,7 @@ export const updateProfileSchema = z.object({
       discord: z.string().optional(),
       youtube: z.string().optional(),
       email: z.string().optional(),
+      phone: z.string().optional(),
       website: z.string().optional(),
     })
     .optional(),

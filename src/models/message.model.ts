@@ -3,6 +3,12 @@ import { IMessage } from "../interfaces";
 
 const messageSchema = new Schema<IMessage>(
   {
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: [true, "Recipient user ID is required"],
+      index: true,
+    },
     senderName: {
       type: String,
       required: [true, "Sender name is required"],

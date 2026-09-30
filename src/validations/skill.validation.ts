@@ -10,7 +10,11 @@ export const createSkillSchema = z.object({
     "DevOps/Cloud",
     "Architecture",
     "Tools",
+    "Graphics",
+    "Animation",
+    "Design",
   ]),
+
   icon: z.string().optional(),
   proficiency: z.number().min(0).max(100).optional().default(80),
   level: z

@@ -6,3 +6,5 @@ export * from "./skill.validation";
 export * from "./post.validation";
 export * from "./message.validation";
 export * from "./testimonial.validation";
+export * from "./portfolio.validation";
+

@@ -7,10 +7,15 @@ export type SkillCategory =
   | "Database"
   | "DevOps/Cloud"
   | "Architecture"
-  | "Tools";
+  | "Tools"
+  | "Graphics"
+  | "Animation"
+  | "Design";
+
 
 export interface ISkill extends Document {
   _id: Types.ObjectId;
+  userId: Types.ObjectId;
   name: string;
   category: SkillCategory;
   icon?: string;

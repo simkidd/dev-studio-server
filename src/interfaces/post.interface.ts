@@ -1,6 +1,7 @@
 import { Document, Types } from "mongoose";
 
 export interface IPost {
+  userId: Types.ObjectId;
   title: string;
   slug: string;
   excerpt: string;

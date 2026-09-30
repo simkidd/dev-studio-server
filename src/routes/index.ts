@@ -9,11 +9,13 @@ import messageRoutes from "./message.routes";
 import testimonialRoutes from "./testimonial.routes";
 import dashboardRoutes from "./dashboard.routes";
 import uploadRoutes from "./upload.routes";
+import portfolioRoutes from "./portfolio.routes";
 
 const apiRouter = Router();
 
 apiRouter.use("/auth", authRoutes);
 apiRouter.use("/profile", profileRoutes);
+apiRouter.use("/portfolios", portfolioRoutes);
 apiRouter.use("/projects", projectRoutes);
 apiRouter.use("/experiences", experienceRoutes);
 apiRouter.use("/skills", skillRoutes);
@@ -24,3 +26,4 @@ apiRouter.use("/dashboard", dashboardRoutes);
 apiRouter.use("/upload", uploadRoutes);
 
 export { apiRouter };
+

@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  register,
   login,
   refreshToken,
   logout,
@@ -9,6 +10,7 @@ import {
 } from "../controllers";
 import { authenticate, validateRequest } from "../middlewares";
 import {
+  registerSchema,
   loginSchema,
   refreshTokenSchema,
   changePasswordSchema,
@@ -17,9 +19,11 @@ import {
 const router = Router();
 
 // Public routes
+router.post("/register", validateRequest(registerSchema), register);
 router.post("/login", validateRequest(loginSchema), login);
 router.post("/refresh", validateRequest(refreshTokenSchema), refreshToken);
 router.post("/bootstrap", validateRequest(loginSchema), bootstrapInitialAdmin);
+
 
 // Protected routes
 router.post("/logout", authenticate, logout);

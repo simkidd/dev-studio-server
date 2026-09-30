@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   getPublicExperiences,
+  getAllExperiencesAdmin,
   createExperience,
   updateExperience,
   deleteExperience,
@@ -15,12 +16,14 @@ const router = Router();
 router.get("/", getPublicExperiences);
 
 // Protected admin routes
+router.get("/admin", authenticate, getAllExperiencesAdmin);
 router.post(
   "/",
   authenticate,
   validateRequest(createExperienceSchema),
   createExperience,
 );
+
 router.put("/reorder", authenticate, reorderExperiences);
 router.put(
   "/:id",

@@ -1,10 +1,27 @@
 import { Request, Response } from "express";
-import { Testimonial } from "../models";
+import { Testimonial, Portfolio } from "../models";
+import { AuthRequest } from "../middlewares";
 import { asyncHandler, sendSuccess, sendError } from "../utils";
 
 export const getPublicTestimonials = asyncHandler(
-  async (_req: Request, res: Response) => {
-    const testimonials = await Testimonial.find({ isApproved: true })
+  async (req: Request, res: Response) => {
+    const { slug, userId } = req.query;
+
+    let targetUserId: any = userId ? String(userId) : undefined;
+    if (slug) {
+      const portfolio = await Portfolio.findOne({ slug: String(slug) });
+      if (portfolio) {
+        targetUserId = portfolio.userId;
+      }
+    }
+
+    const query: Record<string, any> = { isApproved: true };
+    if (targetUserId) {
+      query.userId = targetUserId;
+    }
+
+
+    const testimonials = await Testimonial.find(query)
       .sort({ createdAt: -1 })
       .populate("projectRef", "title slug thumbnailUrl");
 
@@ -13,8 +30,14 @@ export const getPublicTestimonials = asyncHandler(
 );
 
 export const getAllTestimonialsAdmin = asyncHandler(
-  async (_req: Request, res: Response) => {
-    const testimonials = await Testimonial.find()
+  async (req: AuthRequest, res: Response) => {
+    const userId = req.user?.userId;
+    if (!userId) {
+      sendError(res, "Unauthorized", 401);
+      return;
+    }
+
+    const testimonials = await Testimonial.find({ userId })
       .sort({ createdAt: -1 })
       .populate("projectRef", "title slug");
 
@@ -23,19 +46,38 @@ export const getAllTestimonialsAdmin = asyncHandler(
 );
 
 export const createTestimonial = asyncHandler(
-  async (req: Request, res: Response) => {
-    const testimonial = await Testimonial.create(req.body);
+  async (req: AuthRequest, res: Response) => {
+    const userId = req.user?.userId;
+    if (!userId) {
+      sendError(res, "Unauthorized", 401);
+      return;
+    }
+
+    const testimonial = await Testimonial.create({
+      ...req.body,
+      userId,
+    });
     sendSuccess(res, testimonial, "Testimonial created successfully", 201);
   },
 );
 
 export const updateTestimonial = asyncHandler(
-  async (req: Request, res: Response) => {
+  async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
-    const testimonial = await Testimonial.findByIdAndUpdate(id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    const userId = req.user?.userId;
+    if (!userId) {
+      sendError(res, "Unauthorized", 401);
+      return;
+    }
+
+    const testimonial = await Testimonial.findOneAndUpdate(
+      { _id: id, userId },
+      req.body,
+      {
+        new: true,
+        runValidators: true,
+      },
+    );
 
     if (!testimonial) {
       sendError(res, "Testimonial not found", 404);
@@ -47,9 +89,15 @@ export const updateTestimonial = asyncHandler(
 );
 
 export const deleteTestimonial = asyncHandler(
-  async (req: Request, res: Response) => {
+  async (req: AuthRequest, res: Response) => {
     const { id } = req.params;
-    const testimonial = await Testimonial.findByIdAndDelete(id);
+    const userId = req.user?.userId;
+    if (!userId) {
+      sendError(res, "Unauthorized", 401);
+      return;
+    }
+
+    const testimonial = await Testimonial.findOneAndDelete({ _id: id, userId });
 
     if (!testimonial) {
       sendError(res, "Testimonial not found", 404);
@@ -59,3 +107,4 @@ export const deleteTestimonial = asyncHandler(
     sendSuccess(res, null, "Testimonial deleted successfully", 200);
   },
 );
+

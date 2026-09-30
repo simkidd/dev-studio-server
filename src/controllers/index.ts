@@ -8,3 +8,5 @@ export * from "./message.controller";
 export * from "./testimonial.controller";
 export * from "./dashboard.controller";
 export * from "./upload.controller";
+export * from "./portfolio.controller";
+

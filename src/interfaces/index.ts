@@ -6,3 +6,4 @@ export * from "./skill.interface";
 export * from "./post.interface";
 export * from "./message.interface";
 export * from "./testimonial.interface";
+export * from "./portfolio.interface";

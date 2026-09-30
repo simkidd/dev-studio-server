@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   getPublicSkills,
+  getAllSkillsAdmin,
   createSkill,
   updateSkill,
   deleteSkill,
@@ -15,7 +16,9 @@ const router = Router();
 router.get("/", getPublicSkills);
 
 // Protected admin routes
+router.get("/admin", authenticate, getAllSkillsAdmin);
 router.post("/", authenticate, validateRequest(createSkillSchema), createSkill);
+
 router.put("/reorder", authenticate, reorderSkills);
 router.put(
   "/:id",

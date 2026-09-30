@@ -1,12 +1,25 @@
 import { Request, Response } from "express";
-import { Project } from "../models";
+import { Project, Portfolio } from "../models";
 import { UploadService } from "../services";
+import { AuthRequest } from "../middlewares";
 import { asyncHandler, sendSuccess, sendError, slugify, paginate, logger } from "../utils";
 
 export const getPublicProjects = asyncHandler(async (req: Request, res: Response) => {
-  const { category, featured, search, page = 1, limit = 20 } = req.query;
+  const { category, featured, search, page = 1, limit = 20, slug, userId } = req.query;
+
+  let targetUserId: any = userId ? String(userId) : undefined;
+  if (slug) {
+    const portfolio = await Portfolio.findOne({ slug: String(slug) });
+    if (portfolio) {
+      targetUserId = portfolio.userId;
+    }
+  }
 
   const filter: Record<string, any> = { isPublished: true };
+  if (targetUserId) {
+    filter.userId = targetUserId;
+  }
+
 
   if (category && category !== "All") {
     filter.category = category;
@@ -56,10 +69,12 @@ export const getProjectBySlug = asyncHandler(async (req: Request, res: Response)
   sendSuccess(res, project, "Project retrieved successfully", 200);
 });
 
-export const getProjectById = asyncHandler(async (req: Request, res: Response) => {
+export const getProjectById = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
+  const userId = req.user?.userId;
 
-  const project = await Project.findById(id);
+  const query = userId ? { _id: id, userId } : { _id: id, isPublished: true };
+  const project = await Project.findOne(query);
   if (!project) {
     sendError(res, "Project not found", 404);
     return;
@@ -68,13 +83,25 @@ export const getProjectById = asyncHandler(async (req: Request, res: Response) =
   sendSuccess(res, project, "Project retrieved successfully", 200);
 });
 
-export const getAllProjectsAdmin = asyncHandler(async (_req: Request, res: Response) => {
-  const projects = await Project.find().sort({ order: 1, createdAt: -1 });
+export const getAllProjectsAdmin = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const userId = req.user?.userId;
+  if (!userId) {
+    sendError(res, "Unauthorized", 401);
+    return;
+  }
+
+  const projects = await Project.find({ userId }).sort({ order: 1, createdAt: -1 });
   sendSuccess(res, projects, "All projects retrieved for admin", 200);
 });
 
-export const createProject = asyncHandler(async (req: Request, res: Response) => {
-  const data = { ...req.body };
+export const createProject = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const userId = req.user?.userId;
+  if (!userId) {
+    sendError(res, "Unauthorized", 401);
+    return;
+  }
+
+  const data = { ...req.body, userId };
 
   if (req.file) {
     const uploadResult = await UploadService.uploadFile(req.file, "projects");
@@ -91,7 +118,7 @@ export const createProject = asyncHandler(async (req: Request, res: Response) =>
     let baseSlug = slugify(data.title);
     let candidateSlug = baseSlug;
     let count = 1;
-    while (await Project.findOne({ slug: candidateSlug })) {
+    while (await Project.findOne({ userId, slug: candidateSlug })) {
       candidateSlug = `${baseSlug}-${count++}`;
     }
     data.slug = candidateSlug;
@@ -101,11 +128,17 @@ export const createProject = asyncHandler(async (req: Request, res: Response) =>
   sendSuccess(res, project, "Project created successfully", 201);
 });
 
-export const updateProject = asyncHandler(async (req: Request, res: Response) => {
+export const updateProject = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
+  const userId = req.user?.userId;
+  if (!userId) {
+    sendError(res, "Unauthorized", 401);
+    return;
+  }
+
   const data = { ...req.body };
 
-  const existingProject = await Project.findById(id);
+  const existingProject = await Project.findOne({ _id: id, userId });
   if (!existingProject) {
     sendError(res, "Project not found", 404);
     return;
@@ -175,7 +208,7 @@ export const updateProject = asyncHandler(async (req: Request, res: Response) =>
     }
   }
 
-  const project = await Project.findByIdAndUpdate(id, data, {
+  const project = await Project.findOneAndUpdate({ _id: id, userId }, data, {
     new: true,
     runValidators: true,
   });
@@ -183,9 +216,15 @@ export const updateProject = asyncHandler(async (req: Request, res: Response) =>
   sendSuccess(res, project, "Project updated successfully", 200);
 });
 
-export const deleteProject = asyncHandler(async (req: Request, res: Response) => {
+export const deleteProject = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-  const project = await Project.findByIdAndDelete(id);
+  const userId = req.user?.userId;
+  if (!userId) {
+    sendError(res, "Unauthorized", 401);
+    return;
+  }
+
+  const project = await Project.findOneAndDelete({ _id: id, userId });
 
   if (!project) {
     sendError(res, "Project not found", 404);
@@ -229,9 +268,15 @@ export const deleteProject = asyncHandler(async (req: Request, res: Response) =>
   sendSuccess(res, null, "Project deleted successfully", 200);
 });
 
-export const toggleFeatured = asyncHandler(async (req: Request, res: Response) => {
+export const toggleFeatured = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-  const project = await Project.findById(id);
+  const userId = req.user?.userId;
+  if (!userId) {
+    sendError(res, "Unauthorized", 401);
+    return;
+  }
+
+  const project = await Project.findOne({ _id: id, userId });
 
   if (!project) {
     sendError(res, "Project not found", 404);
@@ -249,9 +294,15 @@ export const toggleFeatured = asyncHandler(async (req: Request, res: Response) =
   );
 });
 
-export const togglePublished = asyncHandler(async (req: Request, res: Response) => {
+export const togglePublished = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-  const project = await Project.findById(id);
+  const userId = req.user?.userId;
+  if (!userId) {
+    sendError(res, "Unauthorized", 401);
+    return;
+  }
+
+  const project = await Project.findOne({ _id: id, userId });
 
   if (!project) {
     sendError(res, "Project not found", 404);
@@ -272,16 +323,22 @@ export const togglePublished = asyncHandler(async (req: Request, res: Response) 
   );
 });
 
-export const deleteGalleryImage = asyncHandler(async (req: Request, res: Response) => {
+export const deleteGalleryImage = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
+  const userId = req.user?.userId;
   const { publicId } = req.body;
+
+  if (!userId) {
+    sendError(res, "Unauthorized", 401);
+    return;
+  }
 
   if (!publicId) {
     sendError(res, "publicId is required to delete gallery image", 400);
     return;
   }
 
-  const project = await Project.findById(id);
+  const project = await Project.findOne({ _id: id, userId });
   if (!project) {
     sendError(res, "Project not found", 404);
     return;
@@ -302,10 +359,13 @@ export const deleteGalleryImage = asyncHandler(async (req: Request, res: Respons
   sendSuccess(res, project, "Gallery image removed successfully", 200);
 });
 
+export const reorderProjects = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const userId = req.user?.userId;
+  if (!userId) {
+    sendError(res, "Unauthorized", 401);
+    return;
+  }
 
-
-
-export const reorderProjects = asyncHandler(async (req: Request, res: Response) => {
   const { orders } = req.body as { orders: { id: string; order: number }[] };
 
   if (!Array.isArray(orders)) {
@@ -315,7 +375,7 @@ export const reorderProjects = asyncHandler(async (req: Request, res: Response) 
 
   const bulkOps = orders.map((item) => ({
     updateOne: {
-      filter: { _id: item.id },
+      filter: { _id: item.id, userId },
       update: { $set: { order: item.order } },
     },
   }));
@@ -323,3 +383,4 @@ export const reorderProjects = asyncHandler(async (req: Request, res: Response) 
   await Project.bulkWrite(bulkOps);
   sendSuccess(res, null, "Projects reordered successfully", 200);
 });
+

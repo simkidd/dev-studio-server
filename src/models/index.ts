@@ -6,3 +6,4 @@ export * from "./skill.model";
 export * from "./post.model";
 export * from "./message.model";
 export * from "./testimonial.model";
+export * from "./portfolio.model";

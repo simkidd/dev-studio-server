@@ -3,6 +3,12 @@ import { ITestimonial } from "../interfaces";
 
 const testimonialSchema = new Schema<ITestimonial>(
   {
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: [true, "User ID is required"],
+      index: true,
+    },
     clientName: {
       type: String,
       required: [true, "Client name is required"],

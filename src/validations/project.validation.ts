@@ -65,8 +65,11 @@ export const createProjectSchema = z.object({
       "DevOps",
       "AI/ML",
       "System Design",
+      "Creative Dev",
+      "3D/WebGL",
     ])
     .default("Full-Stack"),
+
   liveUrl: z.url("Invalid live URL").or(z.literal("")).optional(),
   githubUrl: z.url("Invalid GitHub URL").or(z.literal("")).optional(),
   isFeatured: booleanPreprocess.optional().default(false),

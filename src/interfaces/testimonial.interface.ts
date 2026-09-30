@@ -2,6 +2,7 @@ import { Document, Types } from "mongoose";
 
 export interface ITestimonial extends Document {
   _id: Types.ObjectId;
+  userId: Types.ObjectId;
   clientName: string;
   clientRole: string;
   company: string;

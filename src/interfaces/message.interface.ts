@@ -3,6 +3,7 @@ import { Document, Types } from "mongoose";
 export type MessageStatus = "unread" | "read" | "replied" | "archived";
 
 export interface IMessage {
+  userId: Types.ObjectId;
   senderName: string;
   senderEmail: string;
   subject?: string;

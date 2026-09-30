@@ -3,6 +3,7 @@ import { connectDB, disconnectDB } from "../config/db";
 import {
   User,
   Profile,
+  Portfolio,
   Project,
   Experience,
   Skill,
@@ -15,13 +16,14 @@ import { logger } from "../utils/logger";
 
 async function seed() {
   try {
-    logger.info("🌱 Starting comprehensive database seeding...");
+    logger.info("🌱 Starting comprehensive multi-tenant database seeding...");
     await connectDB();
 
     // Clear existing collections for a fresh, clean baseline
     await Promise.all([
       User.deleteMany({}),
       Profile.deleteMany({}),
+      Portfolio.deleteMany({}),
       Project.deleteMany({}),
       Experience.deleteMany({}),
       Skill.deleteMany({}),
@@ -31,50 +33,116 @@ async function seed() {
     ]);
     logger.info("🧹 Existing collections cleaned.");
 
-    // 1. Superadmin User
-    const hashedPassword = await AuthService.hashPassword("Admin@2026!");
-    await User.create({
+    // 1. Superadmin User: Alex Morgan
+    const alexPassword = await AuthService.hashPassword("Admin@2026!");
+    const alex = await User.create({
       email: "admin@portfolio.dev",
-      password: hashedPassword,
+      password: alexPassword,
+      firstName: "Alex",
+      lastName: "Morgan",
       role: "superadmin",
     });
     logger.info("✅ Superadmin created: admin@portfolio.dev / Admin@2026!");
 
-    // 2. Developer Profile
-    await Profile.create({
-      firstName: "Alex",
-      lastName: "Morgan",
-      headline: "Senior Staff Full-Stack & Distributed Systems Architect",
-      subHeadline:
-        "Building resilient enterprise microservices, high-throughput data pipelines, and flagship web experiences.",
-      bio: "10+ years architecting web platforms handling $50M+ processed ARR, sub-50ms p99 latencies, and 99.99% uptime SLAs. Specializing in TypeScript, Next.js, React, Node.js, distributed caches, and cloud infrastructure.",
-      aboutMarkdown:
-        "## About Me\n\nI partner with high-growth technology companies and venture-backed startups to untangle distributed bottlenecks, lead engineering teams, and design production systems.",
-      location: "San Francisco, CA / London (Remote Available)",
-      isAvailableForHire: true,
-      availabilityNote:
-        "Available for high-impact Staff/Lead roles & select advisory contracts ($10k–$50k)",
-      socialLinks: {
-        github: "https://github.com",
-        linkedin: "https://linkedin.com",
-        twitter: "https://x.com",
-        email: "alex@morgan.engineering",
-        website: "https://morgan.engineering",
-      },
-      stats: {
-        yearsExperience: 10,
-        completedProjects: 38,
-        happyClients: 22,
-        codeCommits: 5400,
-      },
+    // 2. Normal Developer User: Elena Rostova
+    const elenaPassword = await AuthService.hashPassword("Dev@2026!");
+    const elena = await User.create({
+      email: "elena@devstudio.us",
+      password: elenaPassword,
+      firstName: "Elena",
+      lastName: "Rostova",
+      role: "user",
     });
-    logger.info("✅ Profile created.");
+    logger.info("✅ Developer created: elena@devstudio.us / Dev@2026!");
 
-    // 3. Featured Showcase Projects (With Gallery Images on multiple projects)
-    await Project.create([
+    // 3. Portfolios
+    await Portfolio.create([
+      {
+        userId: alex._id,
+        slug: "alex-morgan",
+        templateId: "nova-engine",
+        isPublished: true,
+        publishedAt: new Date(),
+        seoTitle: "Alex Morgan | Senior Staff Architect & Engineer",
+        seoDescription: "Official developer portfolio of Alex Morgan - Distributed Systems & Next.js.",
+      },
+      {
+        userId: elena._id,
+        slug: "elena-rostova",
+        templateId: "apex-studio",
+        isPublished: true,
+        publishedAt: new Date(),
+        seoTitle: "Elena Rostova | Creative Technologist & Interaction Designer",
+        seoDescription: "Portfolio of Elena Rostova - Bespoke web graphics, WebGL, and Next.js digital experiences.",
+      },
+    ]);
+    logger.info("✅ Portfolios created for Alex and Elena.");
+
+    // 4. Profiles
+    await Profile.create([
+      {
+        userId: alex._id,
+        firstName: "Alex",
+        lastName: "Morgan",
+        headline: "Senior Staff Full-Stack & Distributed Systems Architect",
+        subHeadline:
+          "Building resilient enterprise microservices, high-throughput data pipelines, and flagship web experiences.",
+        bio: "10+ years architecting web platforms handling $50M+ processed ARR, sub-50ms p99 latencies, and 99.99% uptime SLAs. Specializing in TypeScript, Next.js, React, Node.js, distributed caches, and cloud infrastructure.",
+        aboutMarkdown:
+          "## About Me\n\nI partner with high-growth technology companies and venture-backed startups to untangle distributed bottlenecks, lead engineering teams, and design production systems.",
+        location: "San Francisco, CA / London (Remote Available)",
+        isAvailableForHire: true,
+        availabilityNote:
+          "Available for high-impact Staff/Lead roles & select advisory contracts ($10k–$50k)",
+        socialLinks: {
+          github: "https://github.com",
+          linkedin: "https://linkedin.com",
+          twitter: "https://x.com",
+          email: "alex@morgan.engineering",
+          website: "https://morgan.engineering",
+        },
+        stats: {
+          yearsExperience: 10,
+          completedProjects: 38,
+          happyClients: 22,
+          codeCommits: 5400,
+        },
+      },
+      {
+        userId: elena._id,
+        firstName: "Elena",
+        lastName: "Rostova",
+        headline: "Creative Technologist & Interaction Designer",
+        subHeadline:
+          "Crafting visceral digital experiences, WebGL interactives, and award-winning frontend architectures.",
+        bio: "Specializing in next-generation UI interactions, 3D WebGL experiences, and design systems for forward-thinking creative brands.",
+        location: "New York / Berlin",
+        isAvailableForHire: true,
+        availabilityNote: "Booking select brand and interactive engineering sprints for Q4.",
+        socialLinks: {
+          github: "https://github.com",
+          linkedin: "https://linkedin.com",
+          twitter: "https://x.com",
+          email: "elena@devstudio.us",
+          website: "https://devstudio.us",
+        },
+        stats: {
+          yearsExperience: 6,
+          completedProjects: 24,
+          happyClients: 19,
+          codeCommits: 3200,
+        },
+      },
+    ]);
+    logger.info("✅ Profiles created.");
+
+
+    // 5. Featured Showcase Projects (With Gallery Images on multiple projects)
+    const alexProjects = [
       {
         title: "ApexFlow Distributed Event Stream",
         slug: "apexflow-distributed-event-stream",
+
         summary:
           "High-throughput event streaming engine processing 120k events/sec with sub-10ms consumer lag and end-to-end telemetry.",
         caseStudy:
@@ -355,11 +423,85 @@ async function seed() {
         order: 8,
         isPublished: true,
       },
-    ]);
-    logger.info("✅ Showcase projects seeded with gallery images (8 items).");
+    ];
 
-    // 4. Skills Matrix (16 Items across 7 categories)
-    await Skill.create([
+    const elenaProjects = [
+      {
+        userId: elena._id,
+        title: "Kroma Spatial Audio Visualizer",
+        slug: "kroma-spatial-audio-visualizer",
+        summary: "Interactive WebGL audio synthesizer and real-time generative geometry reactive to micro-frequencies.",
+        caseStudy: "## WebGL & Shader Architecture\n\nBuilt custom GLSL fragment shaders processing Web Audio API frequency bins at 120 FPS.",
+        thumbnailUrl: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=800&q=80",
+        galleryImages: [
+          { url: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1200&q=80" },
+          { url: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=1200&q=80" },
+        ],
+        technologies: ["Three.js", "WebGL", "GLSL", "Next.js", "TypeScript", "Tailwind CSS"],
+        category: "Creative Dev",
+        liveUrl: "https://devstudio.us",
+        githubUrl: "https://github.com/example/kroma",
+        isFeatured: true,
+        metrics: [
+          { label: "Frame Rate", value: "120 FPS" },
+          { label: "Render Time", value: "3.2ms" },
+        ],
+        order: 1,
+        isPublished: true,
+      },
+      {
+        userId: elena._id,
+        title: "Verve Editorial & Kinetic Typography",
+        slug: "verve-editorial-typography",
+        summary: "Digital publication platform featuring variable kinetic typography, fluid layout engines, and smooth scroll physics.",
+        caseStudy: "## Fluid Design Systems\n\nCrafted bespoke physics-based interaction models with Framer Motion and GSAP scroll triggers.",
+        thumbnailUrl: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=800&q=80",
+        galleryImages: [
+          { url: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=1200&q=80" },
+        ],
+        technologies: ["Next.js", "GSAP", "Framer Motion", "Tailwind CSS", "TypeScript"],
+        category: "Frontend",
+        liveUrl: "https://devstudio.us",
+        githubUrl: "https://github.com/example/verve",
+        isFeatured: true,
+        metrics: [
+          { label: "Performance", value: "100/100" },
+          { label: "Interactivity", value: "< 50ms INP" },
+        ],
+        order: 2,
+        isPublished: true,
+      },
+      {
+        userId: elena._id,
+        title: "Aura 3D Product Showcase",
+        slug: "aura-3d-product-showcase",
+        summary: "High-fidelity 3D ecommerce configurator with realistic PBR material shaders and interactive camera paths.",
+        caseStudy: "## Real-Time 3D Commerce\n\nOptimized glTF asset compression using Draco and Meshopt to load complex models under 1.2MB.",
+        thumbnailUrl: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=800&q=80",
+        galleryImages: [],
+        technologies: ["React Three Fiber", "Drei", "Three.js", "Next.js", "TypeScript"],
+        category: "3D/WebGL",
+        isFeatured: false,
+
+        metrics: [
+          { label: "Model Size", value: "1.1MB" },
+          { label: "Load Time", value: "480ms" },
+        ],
+        order: 3,
+        isPublished: true,
+      },
+    ];
+
+    await Project.create([
+      ...alexProjects.map((p) => ({ ...p, userId: alex._id })),
+      ...elenaProjects,
+    ] as any);
+    logger.info("✅ Showcase projects seeded for Alex and Elena.");
+
+
+    // 6. Skills Matrix
+    const alexSkills = [
+
       {
         name: "TypeScript",
         category: "Languages",
@@ -484,15 +626,34 @@ async function seed() {
         name: "GitHub Actions",
         category: "Tools",
         proficiency: 92,
-        level: "Advanced",
         isTopSkill: false,
         order: 16,
       },
-    ]);
-    logger.info("✅ Tech matrix skills seeded (16 items).");
+    ];
 
-    // 5. Career Timeline (4 Positions)
-    await Experience.create([
+
+    const elenaSkills = [
+      { name: "Three.js / WebGL", category: "Graphics", proficiency: 98, level: "Expert", isTopSkill: true, order: 1 },
+      { name: "GLSL Shaders", category: "Graphics", proficiency: 92, level: "Expert", isTopSkill: true, order: 2 },
+      { name: "React Three Fiber", category: "Frontend", proficiency: 96, level: "Expert", isTopSkill: true, order: 3 },
+      { name: "TypeScript", category: "Languages", proficiency: 95, level: "Expert", isTopSkill: false, order: 4 },
+      { name: "GSAP / Framer Motion", category: "Animation", proficiency: 98, level: "Expert", isTopSkill: true, order: 5 },
+      { name: "Tailwind CSS", category: "Frontend", proficiency: 96, level: "Expert", isTopSkill: false, order: 6 },
+
+      { name: "Next.js", category: "Frontend", proficiency: 94, level: "Expert", isTopSkill: false, order: 7 },
+      { name: "UI/UX & Creative Direction", category: "Design", proficiency: 95, level: "Expert", isTopSkill: true, order: 8 },
+    ];
+
+    await Skill.create([
+      ...alexSkills.map((s) => ({ ...s, userId: alex._id })),
+      ...elenaSkills.map((s) => ({ ...s, userId: elena._id })),
+    ] as any);
+    logger.info("✅ Tech matrix skills seeded for Alex and Elena.");
+
+
+    // 7. Career Timeline
+    const alexExperiences = [
+
       {
         company: "Stripe / FinTech Ecosystem",
         role: "Principal Distributed Systems Architect",
@@ -580,14 +741,56 @@ async function seed() {
           "Shipped 12 end-to-end commercial web applications on schedule and within budget",
         ],
       },
-    ]);
-    logger.info("✅ Career timeline seeded (4 positions).");
+    ];
 
-    // 6. Technical Blog Articles (5 Posts with Cover Images)
-    await Post.create([
+    const elenaExperiences = [
+      {
+        userId: elena._id,
+        company: "DevStudio Creative Labs",
+        role: "Lead Creative Technologist & Director",
+        location: "New York, NY (Remote)",
+        employmentType: "full-time",
+        isRemote: true,
+        startDate: new Date("2023-06-01").toISOString(),
+        isCurrent: true,
+        summary: "Directing interactive digital branding and bespoke WebGL applications for global luxury & tech brands.",
+        technologies: ["Three.js", "WebGL", "GLSL", "React Three Fiber", "Next.js"],
+        achievements: [
+          "Won 3 Awwwards Site of the Day and 2 FWA recognitions in 2025-2026",
+          "Engineered lightweight GLSL shaders reducing mobile GPU power consumption by 45%",
+        ],
+      },
+      {
+        userId: elena._id,
+        company: "Monolith Interactive Agency",
+        role: "Senior Frontend & Interaction Engineer",
+        location: "Berlin, Germany",
+        employmentType: "full-time",
+        isRemote: false,
+        startDate: new Date("2021-01-10").toISOString(),
+        endDate: new Date("2023-05-15").toISOString(),
+        isCurrent: false,
+        summary: "Crafted high-fidelity 3D animations and fluid design systems for automotive & consumer tech clients.",
+        technologies: ["Next.js", "GSAP", "TypeScript", "Tailwind CSS", "Blender"],
+        achievements: [
+          "Architected reusable kinetic design tokens adopted across 14 client projects",
+        ],
+      },
+    ];
+
+    await Experience.create([
+      ...alexExperiences.map((e) => ({ ...e, userId: alex._id })),
+      ...elenaExperiences,
+    ] as any);
+    logger.info("✅ Career timeline seeded for Alex and Elena.");
+
+
+    // 8. Technical Blog Articles
+    const alexPosts = [
       {
         title:
           "Scaling Distributed Caching with Redis & Next.js Server Components",
+
         slug: "scaling-distributed-caching-redis-nextjs-server-components",
         excerpt:
           "How we eliminated redundant database queries and achieved sub-20ms TTFB on global Next.js deployments.",
@@ -660,16 +863,38 @@ async function seed() {
         isPublished: true,
         viewsCount: 2980,
         likesCount: 245,
-        readingTimeMinutes: 5,
         publishedAt: new Date("2026-05-12").toISOString(),
       },
-    ]);
-    logger.info("✅ Blog articles seeded (5 posts with cover images).");
+    ];
 
-    // 7. Client Testimonials & Social Proof (4 Items)
-    await Testimonial.create([
+    const elenaPosts = [
+      {
+        userId: elena._id,
+        title: "Crafting Cinematic WebGL Shaders at 120 FPS",
+        slug: "crafting-cinematic-webgl-shaders-120fps",
+        excerpt: "An in-depth look into mathematical raymarching, fragment shaders, and WebGL optimization for web browsers.",
+        content: "## Modern Shader Architecture\n\nWebGL shaders allow us to compute millions of pixel calculations in parallel directly on the client GPU.",
+        coverImageUrl: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1200&q=80",
+        tags: ["WebGL", "Three.js", "GLSL", "Creative Coding"],
+        isPublished: true,
+        viewsCount: 1950,
+        likesCount: 310,
+        readingTimeMinutes: 6,
+        publishedAt: new Date("2026-03-20").toISOString(),
+      },
+    ];
+
+    await Post.create([
+      ...alexPosts.map((p) => ({ ...p, userId: alex._id })),
+      ...elenaPosts,
+    ]);
+    logger.info("✅ Blog articles seeded for Alex and Elena.");
+
+    // 9. Client Testimonials & Social Proof
+    const alexTestimonials = [
       {
         clientName: "Sarah Jenkins",
+
         clientRole: "VP of Engineering",
         company: "Fintech Dynamics",
         quote:
@@ -704,12 +929,30 @@ async function seed() {
         isFeatured: false,
         isApproved: true,
       },
-    ]);
-    logger.info("✅ Testimonials seeded (4 items).");
+    ];
 
-    // 8. Inbound CRM Inquiries & Leads (9 Items)
-    await Message.create([
+    const elenaTestimonials = [
       {
+        userId: elena._id,
+        clientName: "Maximilian Richter",
+        clientRole: "Creative Director",
+        company: "Studio Aura Berlin",
+        quote: "Elena is one of the rare creative engineers who seamlessly blends artistic vision with flawless code. Our digital rebrand won Site of the Year thanks to her WebGL magic.",
+        isFeatured: true,
+        isApproved: true,
+      },
+    ];
+
+    await Testimonial.create([
+      ...alexTestimonials.map((t) => ({ ...t, userId: alex._id })),
+      ...elenaTestimonials,
+    ]);
+    logger.info("✅ Testimonials seeded for Alex and Elena.");
+
+    // 10. Inbound CRM Inquiries & Leads
+    const alexMessages = [
+      {
+
         senderName: "Marcus Vance",
         senderEmail: "marcus@fintechhorizon.io",
         company: "Horizon FinTech Partners",
@@ -814,8 +1057,29 @@ async function seed() {
         status: "read",
         createdAt: new Date(Date.now() - 1000 * 60 * 60 * 50).toISOString(),
       },
-    ]);
-    logger.info("✅ Inquiries & CRM leads seeded (9 items).");
+    ];
+
+    const elenaMessages = [
+      {
+        userId: elena._id,
+        senderName: "Sophie Laurent",
+        senderEmail: "sophie@parisluxury.fr",
+        company: "Maison Laurent",
+        subject: "Bespoke 3D Digital Runway Interactive",
+        budgetRange: "$25,000 - $50,000+",
+        message: "Hi Elena, We adore your work on Kroma and would love to commission a 3D WebGL showcase for our Paris Fashion Week digital experience.",
+        status: "unread",
+        createdAt: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
+      },
+    ];
+
+    await Message.create([
+      ...alexMessages.map((m) => ({ ...m, userId: alex._id })),
+      ...elenaMessages,
+    ] as any);
+    logger.info("✅ Inquiries & CRM leads seeded for Alex and Elena.");
+
+
 
     logger.info(
       "🎉 Complete comprehensive database seeding finished successfully!",

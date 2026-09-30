@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getPublicProfile, updateProfile } from "../controllers";
+import { getPublicProfile, getAdminProfile, updateProfile } from "../controllers";
 import { authenticate, validateRequest } from "../middlewares";
 import { updateProfileSchema } from "../validations";
 
@@ -8,7 +8,8 @@ const router = Router();
 // Public
 router.get("/", getPublicProfile);
 
-// Admin
+// Admin / Authenticated User
+router.get("/admin", authenticate, getAdminProfile);
 router.put(
   "/",
   authenticate,
@@ -17,3 +18,4 @@ router.put(
 );
 
 export default router;
+

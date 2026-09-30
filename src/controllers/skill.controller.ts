@@ -1,22 +1,64 @@
 import { Request, Response } from "express";
-import { Skill } from "../models";
+import { Skill, Portfolio } from "../models";
+import { AuthRequest } from "../middlewares";
 import { asyncHandler, sendSuccess, sendError } from "../utils";
 
 export const getPublicSkills = asyncHandler(
-  async (_req: Request, res: Response) => {
-    const skills = await Skill.find().sort({ category: 1, order: 1 });
+  async (req: Request, res: Response) => {
+    const { slug, userId } = req.query;
+
+    let targetUserId: any = userId ? String(userId) : undefined;
+    if (slug) {
+      const portfolio = await Portfolio.findOne({ slug: String(slug) });
+      if (portfolio) {
+        targetUserId = portfolio.userId;
+      }
+    }
+
+    const query: Record<string, any> = {};
+    if (targetUserId) {
+      query.userId = targetUserId;
+    }
+
+
+    const skills = await Skill.find(query).sort({ category: 1, order: 1 });
     sendSuccess(res, skills, "Skills retrieved successfully", 200);
   },
 );
 
-export const createSkill = asyncHandler(async (req: Request, res: Response) => {
-  const skill = await Skill.create(req.body);
+export const getAllSkillsAdmin = asyncHandler(
+  async (req: AuthRequest, res: Response) => {
+    const userId = req.user?.userId;
+    if (!userId) {
+      sendError(res, "Unauthorized", 401);
+      return;
+    }
+
+    const skills = await Skill.find({ userId }).sort({ category: 1, order: 1 });
+    sendSuccess(res, skills, "Skills retrieved for admin", 200);
+  },
+);
+
+export const createSkill = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const userId = req.user?.userId;
+  if (!userId) {
+    sendError(res, "Unauthorized", 401);
+    return;
+  }
+
+  const skill = await Skill.create({ ...req.body, userId });
   sendSuccess(res, skill, "Skill created successfully", 201);
 });
 
-export const updateSkill = asyncHandler(async (req: Request, res: Response) => {
+export const updateSkill = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-  const skill = await Skill.findByIdAndUpdate(id, req.body, {
+  const userId = req.user?.userId;
+  if (!userId) {
+    sendError(res, "Unauthorized", 401);
+    return;
+  }
+
+  const skill = await Skill.findOneAndUpdate({ _id: id, userId }, req.body, {
     new: true,
     runValidators: true,
   });
@@ -29,9 +71,15 @@ export const updateSkill = asyncHandler(async (req: Request, res: Response) => {
   sendSuccess(res, skill, "Skill updated successfully", 200);
 });
 
-export const deleteSkill = asyncHandler(async (req: Request, res: Response) => {
+export const deleteSkill = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-  const skill = await Skill.findByIdAndDelete(id);
+  const userId = req.user?.userId;
+  if (!userId) {
+    sendError(res, "Unauthorized", 401);
+    return;
+  }
+
+  const skill = await Skill.findOneAndDelete({ _id: id, userId });
 
   if (!skill) {
     sendError(res, "Skill not found", 404);
@@ -42,7 +90,13 @@ export const deleteSkill = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const reorderSkills = asyncHandler(
-  async (req: Request, res: Response) => {
+  async (req: AuthRequest, res: Response) => {
+    const userId = req.user?.userId;
+    if (!userId) {
+      sendError(res, "Unauthorized", 401);
+      return;
+    }
+
     const { orders } = req.body as { orders: { id: string; order: number }[] };
 
     if (!Array.isArray(orders)) {
@@ -52,7 +106,7 @@ export const reorderSkills = asyncHandler(
 
     const bulkOps = orders.map((item) => ({
       updateOne: {
-        filter: { _id: item.id },
+        filter: { _id: item.id, userId },
         update: { $set: { order: item.order } },
       },
     }));
@@ -61,3 +115,4 @@ export const reorderSkills = asyncHandler(
     sendSuccess(res, null, "Skills reordered successfully", 200);
   },
 );
+

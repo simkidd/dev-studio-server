@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-import { Message } from "../models";
+import { Message, Portfolio, User } from "../models";
+import { AuthRequest } from "../middlewares";
 import { ENV } from "../config/env";
 import {
   asyncHandler,
@@ -12,7 +13,23 @@ import {
 } from "../utils";
 
 export const submitContactMessage = asyncHandler(async (req: Request, res: Response) => {
-  const { senderName, senderEmail, subject, message, company, budgetRange } = req.body;
+  const { senderName, senderEmail, subject, message, company, budgetRange, portfolioSlug, userId } = req.body;
+
+  let targetUserId = userId;
+  if (portfolioSlug) {
+    const portfolio = await Portfolio.findOne({ slug: portfolioSlug });
+    if (portfolio) {
+      targetUserId = portfolio.userId;
+    }
+  }
+
+  // If still no target user found, fallback to the first admin/superadmin user
+  if (!targetUserId) {
+    const defaultUser = await User.findOne({ role: { $in: ["superadmin", "admin"] } });
+    if (defaultUser) {
+      targetUserId = defaultUser._id;
+    }
+  }
 
   const rawIp = req.headers["x-forwarded-for"] || req.socket.remoteAddress;
   const ipAddress = Array.isArray(rawIp) ? rawIp[0] : (rawIp || "");
@@ -20,6 +37,7 @@ export const submitContactMessage = asyncHandler(async (req: Request, res: Respo
   const userAgent = Array.isArray(rawUserAgent) ? rawUserAgent[0] : (rawUserAgent || "");
 
   const newMessage = await Message.create({
+    userId: targetUserId,
     senderName,
     senderEmail,
     subject: subject || `New Inquiry from ${senderName}`,
@@ -30,10 +48,18 @@ export const submitContactMessage = asyncHandler(async (req: Request, res: Respo
     userAgent: userAgent || undefined,
   });
 
-  // 1. Send Admin Notification Email via Brevo
-  if (ENV.BREVO_FROM_EMAIL) {
+  // 1. Send Admin / Portfolio Owner Notification Email
+  let recipientEmail = ENV.BREVO_FROM_EMAIL;
+  if (targetUserId) {
+    const owner = await User.findById(targetUserId);
+    if (owner?.email) {
+      recipientEmail = owner.email;
+    }
+  }
+
+  if (recipientEmail) {
     sendEmail({
-      to: ENV.BREVO_FROM_EMAIL,
+      to: recipientEmail,
       subject: `🚨 Portfolio Lead: ${senderName} (${company || "Individual"})`,
       htmlContent: generateContactNotificationEmail({
         senderName,
@@ -68,10 +94,16 @@ export const submitContactMessage = asyncHandler(async (req: Request, res: Respo
   );
 });
 
-export const getAllMessages = asyncHandler(async (req: Request, res: Response) => {
+export const getAllMessages = asyncHandler(async (req: AuthRequest, res: Response) => {
+  const userId = req.user?.userId;
+  if (!userId) {
+    sendError(res, "Unauthorized", 401);
+    return;
+  }
+
   const { status, page = 1, limit = 20 } = req.query;
 
-  const filter: Record<string, any> = {};
+  const filter: Record<string, any> = { userId };
   if (status && status !== "all") {
     filter.status = status;
   }
@@ -96,10 +128,15 @@ export const getAllMessages = asyncHandler(async (req: Request, res: Response) =
   );
 });
 
-export const getMessageById = asyncHandler(async (req: Request, res: Response) => {
+export const getMessageById = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
+  const userId = req.user?.userId;
+  if (!userId) {
+    sendError(res, "Unauthorized", 401);
+    return;
+  }
 
-  const message = await Message.findById(id);
+  const message = await Message.findOne({ _id: id, userId });
   if (!message) {
     sendError(res, "Message not found", 404);
     return;
@@ -113,8 +150,14 @@ export const getMessageById = asyncHandler(async (req: Request, res: Response) =
   sendSuccess(res, message, "Message details retrieved", 200);
 });
 
-export const updateMessageStatus = asyncHandler(async (req: Request, res: Response) => {
+export const updateMessageStatus = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
+  const userId = req.user?.userId;
+  if (!userId) {
+    sendError(res, "Unauthorized", 401);
+    return;
+  }
+
   const { status, replyNotes, isReplied } = req.body;
 
   const updateData: Record<string, any> = { status };
@@ -124,7 +167,7 @@ export const updateMessageStatus = asyncHandler(async (req: Request, res: Respon
     if (isReplied) updateData.repliedAt = new Date();
   }
 
-  const message = await Message.findByIdAndUpdate(id, updateData, { new: true });
+  const message = await Message.findOneAndUpdate({ _id: id, userId }, updateData, { new: true });
   if (!message) {
     sendError(res, "Message not found", 404);
     return;
@@ -133,8 +176,14 @@ export const updateMessageStatus = asyncHandler(async (req: Request, res: Respon
   sendSuccess(res, message, "Message status updated successfully", 200);
 });
 
-export const replyToMessage = asyncHandler(async (req: Request, res: Response) => {
+export const replyToMessage = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
+  const userId = req.user?.userId;
+  if (!userId) {
+    sendError(res, "Unauthorized", 401);
+    return;
+  }
+
   const replyContent = req.body.replyMessage || req.body.reply;
 
   if (!replyContent || !replyContent.trim()) {
@@ -142,7 +191,7 @@ export const replyToMessage = asyncHandler(async (req: Request, res: Response) =
     return;
   }
 
-  const message = await Message.findById(id);
+  const message = await Message.findOne({ _id: id, userId });
   if (!message) {
     sendError(res, "Message not found", 404);
     return;
@@ -182,9 +231,15 @@ export const replyToMessage = asyncHandler(async (req: Request, res: Response) =
   sendSuccess(res, message, "Reply dispatched and recorded successfully", 200);
 });
 
-export const deleteMessage = asyncHandler(async (req: Request, res: Response) => {
+export const deleteMessage = asyncHandler(async (req: AuthRequest, res: Response) => {
   const { id } = req.params;
-  const message = await Message.findByIdAndDelete(id);
+  const userId = req.user?.userId;
+  if (!userId) {
+    sendError(res, "Unauthorized", 401);
+    return;
+  }
+
+  const message = await Message.findOneAndDelete({ _id: id, userId });
 
   if (!message) {
     sendError(res, "Message not found", 404);
@@ -193,3 +248,4 @@ export const deleteMessage = asyncHandler(async (req: Request, res: Response) =>
 
   sendSuccess(res, null, "Message deleted successfully", 200);
 });
+

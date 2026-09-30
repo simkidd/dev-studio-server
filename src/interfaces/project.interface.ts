@@ -7,7 +7,10 @@ export type ProjectCategory =
   | "Mobile"
   | "DevOps"
   | "AI/ML"
-  | "System Design";
+  | "System Design"
+  | "Creative Dev"
+  | "3D/WebGL";
+
 
 export interface IProjectMetric {
   label: string;
@@ -21,6 +24,7 @@ export interface IProjectImage {
 
 export interface IProject extends Document {
   _id: Types.ObjectId;
+  userId: Types.ObjectId;
   title: string;
   slug: string;
   summary: string;

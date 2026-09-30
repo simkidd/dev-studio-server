@@ -3,6 +3,12 @@ import { IExperience } from "../interfaces";
 
 const experienceSchema = new Schema<IExperience>(
   {
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: [true, "User ID is required"],
+      index: true,
+    },
     company: {
       type: String,
       required: [true, "Company name is required"],
