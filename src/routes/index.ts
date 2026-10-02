@@ -10,6 +10,7 @@ import testimonialRoutes from "./testimonial.routes";
 import dashboardRoutes from "./dashboard.routes";
 import uploadRoutes from "./upload.routes";
 import portfolioRoutes from "./portfolio.routes";
+import platformRoutes from "./platform.routes";
 
 const apiRouter = Router();
 
@@ -24,6 +25,6 @@ apiRouter.use("/messages", messageRoutes);
 apiRouter.use("/testimonials", testimonialRoutes);
 apiRouter.use("/dashboard", dashboardRoutes);
 apiRouter.use("/upload", uploadRoutes);
+apiRouter.use("/platform", platformRoutes);
 
 export { apiRouter };
-

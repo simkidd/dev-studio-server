@@ -7,3 +7,7 @@ export * from "./post.model";
 export * from "./message.model";
 export * from "./testimonial.model";
 export * from "./portfolio.model";
+export * from "./reserved-slug.model";
+export * from "./announcement.model";
+export * from "./audit-log.model";
+export * from "./template-setting.model";

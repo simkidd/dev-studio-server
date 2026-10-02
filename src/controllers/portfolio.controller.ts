@@ -8,6 +8,7 @@ import {
   Testimonial,
   Post,
   User,
+  ReservedSlug,
 } from "../models";
 import { AuthRequest } from "../middlewares";
 import { asyncHandler, sendSuccess, sendError, slugify } from "../utils";
@@ -65,6 +66,12 @@ export const updatePortfolioSettings = asyncHandler(
       const cleanSlug = slugify(slug);
       if (!cleanSlug || cleanSlug.length < 3) {
         sendError(res, "Slug must be at least 3 alphanumeric characters", 400);
+        return;
+      }
+
+      const isReserved = await ReservedSlug.findOne({ slug: cleanSlug });
+      if (isReserved) {
+        sendError(res, `The slug "${cleanSlug}" is a reserved platform keyword and cannot be claimed`, 400);
         return;
       }
 
